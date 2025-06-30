@@ -28,6 +28,6 @@ async function bootstrap() {
       'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-standalone-preset.min.css',
     ],
   });
-  await app.listen(3000);
+  await app.listen(3001);
 }
 bootstrap();

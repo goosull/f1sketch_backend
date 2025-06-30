@@ -18,8 +18,8 @@ export class LeaderboardController {
     return this.lbService.findAll();
   }
 
-  @Get()
-  listByTrack(@Query('trackId') trackId: string) {
+  @Get('track/:trackId')
+  async findByTrack(@Param('trackId') trackId: string) {
     return this.lbService.findByTrack(trackId);
   }
 }

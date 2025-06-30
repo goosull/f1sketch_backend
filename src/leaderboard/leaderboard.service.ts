@@ -7,7 +7,7 @@ import {
 import { SupabaseClient } from '@supabase/supabase-js';
 import { CreateLeaderboardEntryDto } from './dto/create-leaderboard.dto';
 import { SUPABASE_CLIENT } from '../supabase/supabase.module';
-import { Submission, LeaderboardRow } from './types';
+import { Submission, LeaderboardRow, TrackLeaderboardRow } from './types';
 
 @Injectable()
 export class LeaderboardService {
@@ -82,38 +82,35 @@ export class LeaderboardService {
     return flattened as LeaderboardRow[];
   }
 
-  async findByTrack(trackId: string) {
+  async findByTrack(trackId: string): Promise<TrackLeaderboardRow[]> {
     const { data, error } = await this.supabase
       .from('leaderboard_entry')
-      // submission_id 포함, submission 안에 track_id·score만 가져오기
+      // submission 테이블을 inner join 으로 변경
       .select(
-        'id, username, created_at, submission_id, submission(track_id,score)',
+        'id, username, created_at, submission_id, submission!inner(track_id, score)',
       )
-      // 관계 테이블 필터
-      .eq('submission.track_id', trackId)
-      // submission.score 내림차순 정렬
-      .order('score', { foreignTable: 'submission', ascending: false });
+      .eq('submission.track_id', Number(trackId));
 
     if (error) {
       throw new InternalServerErrorException(error.message);
     }
 
-    return (data ?? []).map((r) => {
-      // nested submission 객체
-      const sub = (r as any).submission as {
-        track_id: number;
-        score: number;
-      } | null;
-
-      return {
-        id: r.id,
-        username: r.username,
-        created_at: r.created_at,
-        submission_id: r.submission_id,
-        // submission이 null이 아닐 때만 꺼내기
-        track_id: sub?.track_id ?? null,
-        score: sub?.score ?? 0,
-      };
-    });
+    return (data || [])
+      .map((entry: any) => ({
+        id: entry.id,
+        username: entry.username,
+        created_at: entry.created_at,
+        submission_id: entry.submission_id,
+        track_id: entry.submission?.track_id,
+        score: entry.submission?.score,
+      }))
+      .sort((a, b) => {
+        if (a.score === b.score) {
+          return (
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
+        }
+        return b.score - a.score;
+      }) as TrackLeaderboardRow[];
   }
 }

@@ -2,7 +2,7 @@
 import { Body, Query, Param, Controller, Get, Post } from '@nestjs/common';
 import { CreateLeaderboardEntryDto } from './dto/create-leaderboard.dto';
 import { LeaderboardService } from './leaderboard.service';
-import { LeaderboardRow } from './types';
+import { LeaderboardRow, TrackLeaderboardRow } from './types';
 
 @Controller('leaderboard')
 export class LeaderboardController {
@@ -19,7 +19,9 @@ export class LeaderboardController {
   }
 
   @Get('track/:trackId')
-  async findByTrack(@Param('trackId') trackId: string) {
+  findByTrack(
+    @Param('trackId') trackId: string,
+  ): Promise<TrackLeaderboardRow[]> {
     return this.lbService.findByTrack(trackId);
   }
 }

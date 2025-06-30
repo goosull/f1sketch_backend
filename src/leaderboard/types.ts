@@ -9,3 +9,12 @@ export interface LeaderboardRow {
   created_at: string;
   submission?: Submission;
 }
+
+export interface TrackLeaderboardRow {
+  id: number;
+  username: string | null;
+  created_at: string;
+  submission_id: string;
+  track_id: number | null;
+  score: number;
+}

@@ -1,11 +1,17 @@
 // src/submission/submission.service.ts
-import { Inject, Injectable, BadRequestException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 
 import { CreateSubmissionDto } from './dto/create-submission.dto';
+import { Submission } from './entities/submission.entity';
 import { SUPABASE_CLIENT } from '../supabase/supabase.module';
 
 @Injectable()
@@ -75,6 +81,27 @@ export class SubmissionService {
   }
 
   async findOne(id: string) {
-    return this.supabase.from('submission').select('*').eq('id', id).single();
+    const { data, error } = await this.supabase
+      .from('submission')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      throw new NotFoundException(`id=${id}인 제출을 찾을 수 없습니다.`);
+    }
+
+    return {
+      id: data.id,
+      track_id: data.track_id,
+      username: data.username,
+      created_at: data.created_at,
+      score: data.score,
+      hausdorff: data.hausdorff,
+      user_path: JSON.parse(data.user_path_json) as number[][],
+      normalized_user_path: JSON.parse(
+        data.normalized_user_path_json,
+      ) as number[][],
+    };
   }
 }

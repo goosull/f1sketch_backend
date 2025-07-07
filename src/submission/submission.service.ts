@@ -83,18 +83,21 @@ export class SubmissionService {
   async findOne(id: string) {
     const { data, error } = await this.supabase
       .from('submission')
-      .select('*')
+      .select('*, leaderboard_entry!inner(username)')
       .eq('id', id)
       .single();
 
     if (error) {
+      console.error('제출 조회 오류:', error);
       throw new NotFoundException(`id=${id}인 제출을 찾을 수 없습니다.`);
     }
+
+    const username = data.leaderboard_entry?.[0]?.username ?? null;
 
     return {
       id: data.id,
       track_id: data.track_id,
-      username: data.username,
+      username: username || data.username,
       created_at: data.created_at,
       score: data.score,
       hausdorff: data.hausdorff,

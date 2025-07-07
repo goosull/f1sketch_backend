@@ -37,12 +37,10 @@ export class TrackService {
     return data;
   }
 
-  async findNames() {
-    const { data, error } = await this.supabase
-      .from('track')
-      .select('id, name');
+  async findInfo() {
+    const { data, error } = await this.supabase.from('track').select('*');
     if (error) throw error;
-    return data;
+    return data.map((track) => (({ path_json, ...rest }) => rest)(track));
   }
 
   async update(id: number, updateTrackDto: UpdateTrackDto) {

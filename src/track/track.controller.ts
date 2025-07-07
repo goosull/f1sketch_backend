@@ -25,9 +25,9 @@ export class TrackController {
     return this.trackService.findAll();
   }
 
-  @Get('names')
-  findNames() {
-    return this.trackService.findNames();
+  @Get('info')
+  findInfo() {
+    return this.trackService.findInfo();
   }
 
   @Get(':id')
